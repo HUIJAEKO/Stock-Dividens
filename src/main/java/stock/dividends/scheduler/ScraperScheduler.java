@@ -31,8 +31,7 @@ public class ScraperScheduler {
         List<CompanyEntity> companyEntities = this.companyRepository.findAll();
 
         for(var company : companyEntities){
-            ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(Company.builder()
-                    .name(company.getName()).ticker(company.getTicker()).build());
+            ScrapedResult scrapedResult = this.yahooFinanceScraper.scrap(new Company(company.getTicker(), company.getName()));
 
             scrapedResult.getDividendEntities().stream()
                     .map(e -> new DividendEntity(company.getId(), e))

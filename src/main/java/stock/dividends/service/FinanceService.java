@@ -1,6 +1,7 @@
 package stock.dividends.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import stock.dividends.domain.CompanyEntity;
 import stock.dividends.domain.DividendEntity;
@@ -14,22 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Nodes.collect;
 
 @Service
 @AllArgsConstructor
 public class FinanceService {
 
     private final CompanyRepository companyRepository;
-    private final DividendRepository dividendRepository
+    private final DividendRepository dividendRepository;
 
+    @Cacheable(key = "#companyName", value = "finance")
     public ScrapedResult getDividendByCompanyName(String companyName){
         CompanyEntity company = this.companyRepository.findByName(companyName)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회사입니다."));
 
         List<DividendEntity> dividendEntities = this.dividendRepository.findAllByCompanyId(company.getId());
-
-        List<Dividend> dividends = new ArrayList<>();
 
 //        for(var entity : dividendEntities){
 //            dividends.add(Dividend.builder()
@@ -38,17 +37,10 @@ public class FinanceService {
 //                    .build());
 //        }
 
-        dividendEntities.stream()
-                .map(e -> Dividend.builder()
-                        .date(e.getDate())
-                        .dividend(e.getDividend())
-                        .build())
+        List<Dividend> dividends = dividendEntities.stream()
+                .map(e -> new Dividend(e.getDate(), e.getDividend()))
                 .collect(Collectors.toList());
 
-        return new ScrapedResult(Company.builder()
-                .ticker(company.getTicker())
-                .name(company.getName())
-                .build(),
-        null);
+        return new ScrapedResult(new Company(company.getTicker(), company.getName()), dividends);
     }
 }

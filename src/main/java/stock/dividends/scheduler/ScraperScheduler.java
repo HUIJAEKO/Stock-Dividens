@@ -2,6 +2,8 @@ package stock.dividends.scheduler;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import stock.dividends.domain.CompanyEntity;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@EnableCaching
 @AllArgsConstructor
 public class ScraperScheduler {
 
@@ -23,7 +26,7 @@ public class ScraperScheduler {
     private final Scraper yahooFinanceScraper;
     private final DividendRepository dividendRepository;
 
-
+    @CacheEvict(value = "finance", allEntries = true)
     @Scheduled(cron = "${scheduler.scrap.yahoo}")
     public void yahooFinanceScheduling(){
         log.info("scraping scheduler is started");

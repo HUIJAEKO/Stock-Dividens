@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import stock.dividends.domain.CompanyEntity;
 import stock.dividends.domain.DividendEntity;
+import stock.dividends.exception.impl.NoCompanyException;
 import stock.dividends.model.Company;
 import stock.dividends.model.Dividend;
 import stock.dividends.model.ScrapedResult;
@@ -26,7 +27,7 @@ public class FinanceService {
     @Cacheable(key = "#companyName", value = "finance")
     public ScrapedResult getDividendByCompanyName(String companyName){
         CompanyEntity company = this.companyRepository.findByName(companyName)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회사입니다."));
+                .orElseThrow(() -> new NoCompanyException());
 
         List<DividendEntity> dividendEntities = this.dividendRepository.findAllByCompanyId(company.getId());
 
